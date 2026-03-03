@@ -15,8 +15,6 @@ return new class extends Migration
             $table->enum('status', ['active', 'inactive'])->default('active')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
-            
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->index('user_id');
         });
     }

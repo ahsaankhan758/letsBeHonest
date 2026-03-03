@@ -14,6 +14,7 @@ if($currentPrefix == 'admin'){
 
 require __DIR__.'/auth.php';
 
+
 // Front End Manage Donations and Trees
 if($currentPrefix == 'my'){
     Route::prefix('my')->middleware('frontEndAuth')->group(function () {
@@ -28,4 +29,4 @@ Route::get('/', [DashboardController::class, 'react'])->name('react');
 // Dashboard Routes
 
 
-Route::view('/{any}', 'app')->where('any', '.*');
+//Route::view('/{any}', 'app')->where('any', '.*');

@@ -15,11 +15,12 @@ Route::middleware('api')->group(function () {
     Route::post('store', [AuthenticatedSessionController::class, 'store']);
     Route::post('getRegistered', [RegisteredUserController::class, 'store']);
     Route::post('storeLogin', [AuthenticatedSessionController::class, 'storeLogin']);
-    Route::post('logout', [AuthenticatedSessionController::class, 'destroy']);
-
-    // Follow Users
-    Route::get('followUser', [FollowUserController::class, 'followUser']);
-
+    
+    Route::middleware('auth:sanctum')->group(function () {
+        // Follow Users
+        Route::get('followUser', [FollowUserController::class, 'followUser']);
+        Route::post('logout', [AuthenticatedSessionController::class, 'destroy']);
+    });
     // Get Vibes
     Route::get('getVibes', [GetVibesController::class, 'getVibes']);
 

@@ -40,11 +40,14 @@ class AuthenticatedSessionController extends Controller
             'message' => 'Invalid credentials.'
         ], 401);
     }
+    $user = Auth::user();
 
+    $token = $user->createToken('api-token')->plainTextToken;
         return response()->json([
             'success' => true,
             'message' => 'You have been Logged In Successfully.',
-            'user' => Auth::user()
+            'token' => $token,
+            'user' => $user
         ]);
     }
     /**
@@ -99,7 +102,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): \Illuminate\Http\JsonResponse
     {
-         Auth::logout();
+        // Auth::guard('web')->logout();
+        // $request->session()->invalidate();
+        // $request->session()->regenerateToken();
+        // Auth::logout();
+        $request->user()->currentAccessToken()->delete();
         // return redirect('/');
         return response()->json([
             'success' => true,

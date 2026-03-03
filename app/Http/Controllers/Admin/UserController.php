@@ -3,244 +3,83 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use App\Models\User;
- use App\Mail\AccountCreatedMail;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 class UserController extends Controller
 {
-public function create()
+    public function index(Request $request)
+    {
+        $users = User::when($request->search, function ($query) use ($request) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('location', 'like', '%' . $request->search . '%')
+                  ->orWhere('gender', 'like', '%' . $request->search . '%');
+        })
+        ->latest()
+        ->paginate(10);
+
+        return view('admin.users.index', compact('users'));
+    }
+
+    public function show(User $user)
+    {
+        return view('admin.users.show', compact('user'));
+    }
+
+    public function edit(User $user)
+    {
+        return view('admin.users.edit', compact('user'));
+    }
+
+ public function update(Request $request, User $user)
 {
-    return view('admin.users.create');
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'age' => 'nullable|integer',
+        'gender' => 'nullable|string|max:20',
+        'email' => 'nullable|email|max:255',
+        'location' => 'nullable|string|max:255',
+        'height' => 'nullable|string|max:50',
+        'weight' => 'nullable|string|max:50',
+        'vibe_id' => 'nullable|string|max:100',
+        'instagram_url' => 'nullable|url|max:255',
+        'is_active' => 'required|boolean',
+        'profile_photo' => 'nullable|image|max:2048',
+    ]);
+
+    // Update main fields
+    $user->update($request->only([
+        'name','age','gender','email','location','height','weight','vibe_id','instagram_url','is_active'
+    ]));
+
+    // Handle profile photo
+    if ($request->remove_photo && $user->profile_photo) {
+        Storage::delete($user->profile_photo);
+        $user->profile_photo = null;
+    }
+
+    if ($request->hasFile('profile_photo')) {
+        if ($user->profile_photo) {
+            Storage::delete($user->profile_photo);
+        }
+        $user->profile_photo = $request->file('profile_photo')->store('users');
+    }
+
+    $user->save();
+
+    return redirect()->route('users.index', $user->id)
+                     ->with('success', 'User updated successfully!');
 }
 
-public function store(Request $request)
+   public function destroy(User $user)
 {
-    $rules = [
-        'name' => 'required|string|max:255',
-        'password' => 'required|string|min:6',
-        'role' => 'required|in:1,2,3,4,5',
-        'department' => 'nullable|string|max:255',
-
-        'city' => 'nullable|string|max:255',
-        'district' => 'nullable|string|max:255',
-        'tehsil' => 'nullable|string|max:255',
-
-        'company_city' => 'nullable|string|max:255',
-        'company_district' => 'nullable|string|max:255',
-        'company_tehsil' => 'nullable|string|max:255',
-    ];
-
-    if ($request->role == 2) {
-        $rules += [
-            'company_email' => 'required|email|unique:users,company_email',
-            'company_phone' => 'required|string',
-            'company_address' => 'required|string',
-        ];
-    } else {
-        $rules += [
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'required|string',
-            'address' => 'required|string',
-        ];
+    if ($user->profile_photo) {
+        Storage::disk('public')->delete($user->profile_photo);
     }
 
-    $validated = $request->validate($rules);
-
-    $plainPassword = $request->password;
-
-    $data = [
-        'name' => $request->name,
-        'password' => Hash::make($plainPassword),
-        'role' => $request->role,
-        'department' => $request->department,
-
-        'city' => $request->city,
-        'district' => $request->district,
-        'tehsil' => $request->tehsil,
-
-        'company_city' => $request->company_city,
-        'company_district' => $request->company_district,
-        'company_tehsil' => $request->company_tehsil,
-    ];
-
-    if ($request->role == 2) {
-        $data['company_email'] = $request->company_email;
-        $data['company_phone'] = $request->company_phone;
-        $data['company_address'] = $request->company_address;
-        $mailTo = $request->company_email;
-    } else {
-        $data['email'] = $request->email;
-        $data['phone'] = $request->phone;
-        $data['address'] = $request->address;
-        $mailTo = $request->email;
-    }
-
-    $user = User::create($data);
-
-    Mail::to($mailTo)->send(
-        new AccountCreatedMail($user->name, $mailTo, $plainPassword)
-    );
+    $user->delete();
 
     return redirect()->route('users.index')
-        ->with('success', 'User created & email sent successfully!');
+        ->with('success', 'User deleted successfully.');
 }
-
-
-
-public function index()
-{
-    $users = User::latest()->get();
-    return view('admin.users.index', compact('users'));
-}
-
-public function edit(User $user)
-{
-    return view('admin.users.edit', compact('user'));
-}
-
-
-public function update(Request $request, User $user)
-{
-    $rules = [
-        'name' => 'required|string|max:255',
-        'role' => 'required|in:1,2,3,4,5',
-        'department' => 'nullable|string|max:255',
-
-        'city' => 'nullable|string|max:255',
-        'district' => 'nullable|string|max:255',
-        'tehsil' => 'nullable|string|max:255',
-
-        'company_city' => 'nullable|string|max:255',
-        'company_district' => 'nullable|string|max:255',
-        'company_tehsil' => 'nullable|string|max:255',
-    ];
-
-    if ($request->role == 2) {
-        // Company
-        $rules += [
-            'company_email' => [
-                'required',
-                'email',
-                Rule::unique('users', 'company_email')->ignore($user->id),
-            ],
-            'company_phone' => 'required|string',
-            'company_address' => 'required|string',
-        ];
-    } else {
-        // Personal
-        $rules += [
-            'email' => [
-                'required',
-                'email',
-                Rule::unique('users', 'email')->ignore($user->id),
-            ],
-            'phone' => 'required|string',
-            'address' => 'required|string',
-        ];
-    }
-
-    $validated = $request->validate($rules);
-
-    $data = [
-        'name' => $request->name,
-        'role' => $request->role,
-        'department' => $request->department,
-
-        'city' => $request->city,
-        'district' => $request->district,
-        'tehsil' => $request->tehsil,
-
-        'company_city' => $request->company_city,
-        'company_district' => $request->company_district,
-        'company_tehsil' => $request->company_tehsil,
-    ];
-
-    if ($request->role == 2) {
-        // Company data
-        $data += [
-            'company_email' => $request->company_email,
-            'company_phone' => $request->company_phone,
-            'company_address' => $request->company_address,
-        ];
-    } else {
-        // Personal data
-        $data += [
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address' => $request->address,
-        ];
-    }
-
-    $user->update($data);
-
-    return redirect()
-        ->route('users.index')
-        ->with('success', 'User updated successfully');
-}
-
-
-// public function update(Request $request, User $user)
-// {
-//     $rules = [
-//         'name' => 'required|string|max:255',
-//         'role' => 'required|in:1,2,3,4',
-//     ];
-
-//     if ($request->role == 2) {
-//         $rules += [
-//             'company_email' => 'required|email|unique:users,company_email,' . $user->id,
-//             'company_phone' => 'required',
-//             'company_address' => 'required',
-//         ];
-//     } else {
-//         $rules += [
-//             'email' => 'required|email|unique:users,email,' . $user->id,
-//             'phone' => 'required',
-//             'address' => 'required',
-//         ];
-//     }
-
-//     $validated = $request->validate($rules);
-
-//     $data = [
-//         'name' => $request->name,
-//         'role' => $request->role,
-//     ];
-
-//     if ($request->role == 2) {
-//         $data += [
-//             'company_email' => $request->company_email,
-//             'company_phone' => $request->company_phone,
-//             'company_address' => $request->company_address,
-//             'email' => null,
-//             'phone' => null,
-//             'address' => null,
-//         ];
-//     } else {
-//         $data += [
-//             'email' => $request->email,
-//             'phone' => $request->phone,
-//             'address' => $request->address,
-//             'company_email' => null,
-//             'company_phone' => null,
-//             'company_address' => null,
-//         ];
-//     }
-
-//     $user->update($data);
-
-//     return redirect()->route('admin.users.index')->with('success', 'User updated successfully');
-// }
-
-public function destroy(User $user)
-{
-    $user->delete();
-    return redirect()->back()->with('success', 'User deleted successfully');
-}
-
-
 }

@@ -13,30 +13,21 @@
                 </li>
 
                 <!-- Users -->
-                @if(auth('admin')->check())
+                @if (auth('admin')->check())
                     <li class="{{ request()->routeIs('users.*') ? 'menuitem-active' : '' }}">
-                        <a href="#users" data-bs-toggle="collapse"
-                            class="{{ request()->routeIs('users.*') ? '' : 'collapsed' }}">
+                        <a href="{{ route('users.index') }}" class="{{ request()->routeIs('users.*') ? 'active' : '' }}">
                             <i class="mdi mdi-account-multiple-outline"></i>
                             <span>Users</span>
-                            <span class="menu-arrow"></span>
                         </a>
-                        <div class="collapse {{ request()->routeIs('users.*') ? 'show' : '' }}" id="users">
-                            <ul class="nav-second-level">
-                                <li>
-                                    <a href="{{ route('users.create') }}"
-                                        class="{{ request()->routeIs('users.create') ? 'active' : '' }}">
-                                        Create
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('users.index') }}"
-                                        class="{{ request()->routeIs('users.index') ? 'active' : '' }}">
-                                        Listing
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+                    </li>
+                @endif
+                @if (auth('admin')->check())
+                    <li class="{{ request()->routeIs('vibes.*') ? 'menuitem-active' : '' }}">
+                        <a href="{{ route('vibes.index') }}"
+                            class="{{ request()->routeIs('vibes.*') ? 'active' : '' }}">
+                            <i class="mdi mdi-emoticon-outline"></i>
+                            <span>Vibes</span>
+                        </a>
                     </li>
                 @endif
             </ul>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,37 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthenticatedSessionController extends Controller
 {
+    public function storeLogin(Request $request){
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|',
+            'password' => 'required',
+        ],
+        [
+            'email.required' => 'Email is Required.',
+            'email.email' => 'Please enter a valid email address.',
+            'password.required' => 'Password is Required.',
+        ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        if (!Auth::attempt($request->only('email', 'password'))) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Invalid credentials.'
+        ], 401);
+    }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'You have been Logged In Successfully.',
+            'user' => Auth::user()
+        ]);
+    }
     /**
      * Display the login view.
      */
@@ -31,6 +63,22 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): \Illuminate\Http\JsonResponse
     {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|',
+            'password' => 'required',
+        ],
+        [
+            'email.required' => 'Email is Required.',
+            'email.email' => 'Please enter a valid email address.',
+            'password.required' => 'Password is Required.',
+        ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json([
+                'errors' => $validator->errors()
+            ], 422);
+        }
         $request->authenticate();
 
         $request->session()->regenerate();
@@ -51,12 +99,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): \Illuminate\Http\JsonResponse
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
+         Auth::logout();
         // return redirect('/');
         return response()->json([
             'success' => true,

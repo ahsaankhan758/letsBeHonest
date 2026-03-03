@@ -34,43 +34,29 @@ class RegisteredUserController extends Controller
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
+            'gender' => 'required',
+            'interested' => 'required',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|confirmed',
-            'address' => 'required',
-            // 'city' => 'required',
-            'tehsil' => 'required',
-            'district' => 'required',
-            'role' => 'required|in:1,2',
-            'company_name' => 'required_if:role,2',
-            'company_email' => 'required_if:role,2',
-            'company_phone' => 'required_if:role,2',
-            'department' => 'required_if:role,2',
-            'company_address' => 'required_if:role,2',
-            // 'company_city' => 'required_if:role,2',
-            'company_tehsil' => 'required_if:role,2',
-            'company_district' => 'required_if:role,2',
+            'vibe_id' => 'required|exists:vibes,id',
+            'name' => 'required',
+            'profile_photo' => 'required',
+            'instagram_url' => 'required|url',
         ],
         [
-            'name.required' => 'Name is required.',
-            'email.required' => 'Email is required.',
+            'gender.required' => 'Gender is Required.',
+            'interested.required' => 'Interested In Required',
+            'email.required' => 'Email is Required.',
             'email.email' => 'Please enter a valid email address.',
             'email.unique' => 'This email is already registered.',
-
-            'password.required' => 'Password is required.',
+            'password.required' => 'Password is Required.',
             'password.confirmed' => 'Password confirmation does not match.',
-
-            'role.required' => 'Please select a role.',
-            'role.in' => 'Invalid role selected.',
-
-            'company_name.required_if' => 'Company name is required.',
-            'company_email.required_if' => 'Company email is required.',
-            'company_phone.required_if' => 'Company phone is required.',
-            'department.required_if' => 'Department is required.',
-            'company_address.required_if' => 'Company Address is required.',
-            // 'company_city.required_if' => 'Company City is required.',
-            'company_tehsil.required_if' => 'Company Tehsil is required.',
-            'company_district.required_if' => 'Company District is required.',
+            'vibe_id.required' => 'Vide is Required.',
+            'vibe_id.exists'   => 'Selected Vibe is invalid.',
+            'name.required' => 'Name is Required.',
+            'profile_photo.required' => 'You must upload profile picture',
+            'instagram_url.required' => 'Provide Instagram URL',
+            'instagram_url.url' => 'Provide Valid Instagram URL',
         ]
         );
 
@@ -80,21 +66,12 @@ class RegisteredUserController extends Controller
             ], 422);
         }
 
-        // $user = User::create([
-        //     'name' => $request->name,
-        //     'email' => $request->email,
-        //     'password' => Hash::make($request->password),
-        // ]);
-
-        // event(new Registered($user));
-        
-
         $validated = $validator->validated();
 
         $validated['password'] = Hash::make($validated['password']);
 
         $user = User::create($validated);
-        Auth::login($user);
+        //Auth::login($user);
         return response()->json([
             'success' => true,
             'message' => 'Your Account has been Created and You have been Logged In.'

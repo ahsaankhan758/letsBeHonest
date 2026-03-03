@@ -1,18 +1,22 @@
-import ReactDOM from "react-dom/client";
-import React from "react";
+   import { createRoot } from "react-dom/client";
+  //import App from "./app/App.tsx";
+  //import "./styles/index.css";
+  
 
-function App() {
-    return (
-        <>
-            <h1>Lets Be Honest</h1>
-        </>
-    );
+  // import ReactDOM from "react-dom/client";
+  import React from "react";
+  
+  function App() {
+      return (
+          <>
+              <h1>Lets Be Honest Pakistan</h1>
+          </>
+      );
+  }
+  
+
+  const root = document.getElementById("root");
+
+if (root) {
+    createRoot(root).render(<App />);
 }
-
-
-// const container = document.getElementById('root');
-// createRoot(container).render(<App />);
-
-ReactDOM.createRoot(document.getElementById("root")).render(
-    <App />
-);

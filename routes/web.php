@@ -40,6 +40,7 @@ if($currentPrefix == 'admin'){
 
 require __DIR__.'/auth.php';
 
+
 // Front End Manage Donations and Trees
 if($currentPrefix == 'my'){
     Route::prefix('my')->middleware('frontEndAuth')->group(function () {
@@ -98,4 +99,4 @@ Route::get('counts', [FrontEndCountController::class, 'Counts']);
 // Route::get('/register', fn () => Inertia::render('Auth/Register'))->name('register');
 // Route::get('/login', fn () => Inertia::render('Auth/Login'))->name('login');
 
-Route::view('/{any}', 'app')->where('any', '.*');
+//Route::view('/{any}', 'app')->where('any', '.*');

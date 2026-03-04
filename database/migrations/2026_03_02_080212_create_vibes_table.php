@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('vibes', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->enum('name', ['chill', 'moody', 'funky', 'angry', 'busy']);
+            $table->string('name');
             $table->enum('status', ['active', 'inactive'])->default('active')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();

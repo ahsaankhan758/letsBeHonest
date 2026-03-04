@@ -46,6 +46,8 @@ Route::middleware('auth:admin')->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // vibes routes
+    Route::post('/vibes/toggle-status/{id}', [VibeController::class, 'toggleStatus'])
+        ->name('vibes.toggleStatus');
     Route::get('/vibes', [VibeController::class, 'index'])->name('vibes.index');
     Route::post('/vibes', [VibeController::class, 'store'])->name('vibes.store');
     Route::get('/vibes/edit/{vibe}', [VibeController::class, 'edit'])->name('vibes.edit');

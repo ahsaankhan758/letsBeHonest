@@ -20,16 +20,28 @@ class VibeController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive',
         ]);
 
         Vibe::create([
             'name' => $request->name,
-            'status' => $request->status,
+            'status' => 'active',
             'user_id' => Auth::guard('admin')->id(),
         ]);
 
-        return redirect()->route('vibes.index')->with('success', 'Vibe added successfully');
+        return redirect()->route('vibes.index')
+            ->with('success', 'Vibe added successfully');
+    }
+
+    public function toggleStatus($id)
+    {
+        $vibe = Vibe::findOrFail($id);
+
+        $vibe->status = $vibe->status == 'active' ? 'inactive' : 'active';
+        $vibe->save();
+
+        return response()->json([
+            'status' => $vibe->status,
+        ]);
     }
 
     public function edit(Vibe $vibe)
@@ -41,18 +53,21 @@ class VibeController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive',
         ]);
 
-        $vibe->update($request->all());
+        $vibe->update([
+            'name' => $request->name,
+        ]);
 
-        return redirect()->route('vibes.index')->with('success', 'Vibe updated successfully');
+        return redirect()
+            ->route('vibes.index')
+            ->with('success', 'Vibe updated successfully');
     }
 
     public function destroy(Vibe $vibe)
     {
         $vibe->delete();
 
-        return redirect()->route('vibes.index')->with('success', 'Vibe deleted successfully');
+        return redirect()->route('vibes.index')->with('error', 'Vibe deleted successfully');
     }
 }

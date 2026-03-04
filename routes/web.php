@@ -23,7 +23,8 @@ if($currentPrefix == 'my'){
 }
 
 //Front End React Routes
-Route::get('/', [DashboardController::class, 'react'])->name('react');
+// Route::get('/', [DashboardController::class, 'react'])->name('react');
+Route::get('/', [DashboardController::class, 'index']);
 
 
 // Dashboard Routes

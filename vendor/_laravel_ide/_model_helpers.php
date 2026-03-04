@@ -1036,6 +1036,8 @@ namespace App\Models {
      * @property string $password
      * @property string $email
      * @property int $id
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
+     * @property-read int|null $tokens_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
      * @property-read int|null $notifications_count
      * @method static \Illuminate\Database\Eloquent\Builder<User>|User whereId($value)
@@ -1708,7 +1710,7 @@ namespace App\Models {
      * @property \Illuminate\Support\Carbon $updated_at
      * @property \Illuminate\Support\Carbon $created_at
      * @property mixed $status
-     * @property mixed $name
+     * @property string $name
      * @property mixed $user_id
      * @property int $id
      * @property-read \App\Models\User $user
